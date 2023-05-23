@@ -6,6 +6,28 @@ from .models import User
 from .serializers import UserSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
+from django.core.mail import send_mail
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['POST'])
+def send_email(request):
+    email = request.data.get('email')
+    otp = request.data.get('otp')
+
+    if email and otp:
+        subject = 'OTP Verification'
+        message = f'Your OTP is: {otp}'
+        from_email = 'your-email@example.com'  # Replace with your email address
+
+        try:
+            send_mail(subject, message, from_email, [email])
+            return Response({'message': 'Email sent successfully.'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+    else:
+        return Response({'error': 'Email or OTP missing.'}, status=400)
+
 
 class RegisterView(APIView):
     def post(self, request):

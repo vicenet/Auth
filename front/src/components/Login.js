@@ -7,13 +7,14 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // Create an object with the login credentials
     const credentials = {
-      email: email,
-      password: password
+      email:email,
+      password: password,
     };
 
     api
