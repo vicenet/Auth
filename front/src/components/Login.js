@@ -17,7 +17,7 @@ const Login = () => {
     };
 
     api
-      .post('login/', credentials) // Replace 'login/' with the appropriate login endpoint in your Django backend
+      .post('token/', credentials) // Replace 'login/' with the appropriate login endpoint in your Django backend
       .then((response) => {
         const token = response.data.token;
         // Store the token in localStorage or in a state management solution of your choice

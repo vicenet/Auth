@@ -3,35 +3,70 @@ import { Box, Button, TextField } from '@mui/material';
 import api from '../axiosConfig';
 
 const Register = () => {
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [enteredOTP, setEnteredOTP] = useState('');
+  const [verificationError, setVerificationError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (password === confirmPassword) {
-      // Create a user object with the registration data
+    if (password === confirmPassword && otp) {
       const user = {
         password: password,
         email: email,
-        // Add other registration data if needed
+        phone: phone,
+        otp: otp,
       };
 
       api
-        .post('register/', user) // Replace 'register/' with the appropriate registration endpoint in your Django backend
+        .post('register/', user)
         .then((response) => {
-          // Handle successful registration
           alert('Registration successful!');
           // Additional logic after successful registration (e.g., redirect to a new page)
         })
         .catch((error) => {
-          // Handle registration error
           alert('Registration failed:', error);
           // Additional error handling logic
         });
     } else {
-      console.log('Passwords do not match.');
+      console.log('Passwords do not match or OTP is missing.');
+    }
+  };
+
+  const generateOTP = () => {
+    const digits = '0123456789';
+    let otp = '';
+    for (let i = 0; i < 6; i++) {
+      otp += digits[Math.floor(Math.random() * 10)];
+    }
+    return otp;
+  };
+
+  const sendEmail = (email, otp) => {
+    api
+      .post('send-email/', { email: email, otp: otp })
+      .then((response) => {
+        console.log('Email sent successfully.');
+        // Handle successful email sending
+      })
+      .catch((error) => {
+        console.error('Failed to send email:', error);
+        // Handle email sending error
+      });
+  };
+
+  const handleOTPVerification = () => {
+    // Implement OTP verification logic here
+    if (otp === enteredOTP) {
+      console.log('OTP verified successfully.');
+      setVerificationError('');
+    } else {
+      console.log('Invalid OTP.');
+      setVerificationError('Invalid OTP. Please try again.');
     }
   };
 
@@ -48,6 +83,15 @@ const Register = () => {
           label="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          fullWidth
+          margin="normal"
+          sx={{ marginBottom: '10px' }}
+        />
+        <TextField
+          type="number"
+          label="Phone Number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           fullWidth
           margin="normal"
           sx={{ marginBottom: '10px' }}
@@ -70,6 +114,52 @@ const Register = () => {
           margin="normal"
           sx={{ marginBottom: '10px' }}
         />
+        {otp && (
+          <TextField
+            label="One-Time Password"
+            value={otp}
+            disabled
+            fullWidth
+            margin="normal"
+            sx={{ marginBottom: '10px' }}
+          />
+        )}
+        {!otp && (
+          <>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                const newOtp = generateOTP();
+                setOtp(newOtp);
+                sendEmail(email, newOtp);
+              }}
+              fullWidth
+              sx={{ marginTop: '10px' }}
+            >
+              Resend OTP
+            </Button>
+            <TextField
+              type="text"
+              label="Enter OTP"
+              value={enteredOTP}
+              onChange={(e) => setEnteredOTP(e.target.value)}
+              fullWidth
+              margin="normal"
+              sx={{ marginBottom: '10px' }}
+            />
+            {verificationError && (
+              <p style={{ color: 'red' }}>{verificationError}</p>
+            )}
+            <Button
+              variant="contained"
+              onClick={handleOTPVerification}
+              fullWidth
+              sx={{ marginTop: '10px' }}
+            >
+              Verify OTP
+            </Button>
+          </>
+        )}
         <Button variant="contained" type="submit" sx={{ marginTop: '10px' }}>
           Register
         </Button>
