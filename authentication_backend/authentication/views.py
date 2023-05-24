@@ -2,13 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
-from .serializers import UserSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
+
+from .models import User
+from .serializers import UserSerializer
 
 @api_view(['POST'])
 def send_email(request):
@@ -41,6 +41,7 @@ class RegisterView(APIView):
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginAPIView(APIView):
     def post(self, request):

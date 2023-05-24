@@ -1,31 +1,34 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField } from '@mui/material';
-import api from '../axiosConfig';
+import axios from '../axiosConfig';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // Create an object with the login credentials
     const credentials = {
-      email:email,
+      email: email,
       password: password,
     };
 
-    api
-      .post('token/', credentials) // Replace 'login/' with the appropriate login endpoint in your Django backend
+    axios
+      .post('login/', credentials) // Replace 'login/' with the appropriate login endpoint in your Django backend
       .then((response) => {
-        const token = response.data.token;
-        // Store the token in localStorage or in a state management solution of your choice
-        localStorage.setItem('token', token);
-        // Perform any necessary actions after successful login (e.g., redirect to a new page)
-        // Replace the following line with your desired logic
-        console.log('Login successful!');
+        if (response.status === 200) {
+          const token = response.data.token;
+          // Store the token in localStorage or in a state management solution of your choice
+          localStorage.setItem('token', token);
+          // Perform any necessary actions after successful login (e.g., redirect to a new page)
+          // Replace the following line with your desired logic
+          console.log('Login successful!');
+        } else {
+          setError('An error occurred. Please try again.');
+        }
       })
       .catch((error) => {
         // Handle login error
