@@ -1,5 +1,4 @@
 import axios from 'axios';
-// import twilio from 'twilio';
 
 const instance = axios.create({
   baseURL: 'http://localhost:8000/api/', // Replace with your Django backend URL
@@ -18,10 +17,5 @@ instance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
-// Twilio configuration
-// const accountSid = 'YOUR_TWILIO_ACCOUNT_SID';
-// const authToken = 'YOUR_TWILIO_AUTH_TOKEN';
-// const twilioClient = twilio(accountSid, authToken);
 
 export default instance;

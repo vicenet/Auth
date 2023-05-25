@@ -1,84 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, TextField } from '@mui/material';
+import api from '../axiosConfig';
 
 const Register = () => {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [otp, setOtp] = useState('');
+  const [showOTPInput, setShowOTPInput] = useState(false);
   const [enteredOTP, setEnteredOTP] = useState('');
   const [verificationError, setVerificationError] = useState('');
-  const [isOTPExpired, setIsOTPExpired] = useState(true);
-
-  useEffect(() => {
-    let timer;
-    if (otp) {
-      setIsOTPExpired(false);
-      timer = setTimeout(() => {
-        setIsOTPExpired(true);
-      }, 30000); // Set the OTP lifespan to 30 seconds (30000 milliseconds)
-    }
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [otp]);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (otp && otp === enteredOTP) {
-      console.log('OTP verified successfully.');
-      // Perform registration logic here
-      // Make a POST request to your backend API with the registration data
-      const registrationData = {
+    // Make the POST request to the backend to verify OTP and register the user
+    api
+      .post('/register', {
         phone: phone,
         email: email,
         password: password,
-      };
-      // Make the POST request with the registration data
-      // Example using fetch:
-      fetch('/register', {
-        method: 'POST',
-        body: JSON.stringify(registrationData),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        otp: enteredOTP,
       })
-        .then((response) => {
-          console.log('Registration successful:', response);
-          // Handle successful registration (e.g., display a success message, redirect to a new page)
-        })
-        .catch((error) => {
-          console.error('Registration failed:', error);
-          // Handle registration error (e.g., display an error message)
-        });
-    } else {
-      console.log('Invalid OTP.');
-      setVerificationError('Invalid OTP. Please try again.');
-    }
+      .then((response) => {
+        console.log('Registration successful:', response);
+        // Handle successful registration (e.g., display a success message, redirect to a new page)
+      })
+      .catch((error) => {
+        console.error('Registration failed:', error);
+        // Handle registration error (e.g., display an error message)
+      });
   };
 
-  const generateOTP = () => {
-    const digits = '0123456789';
-    let otp = '';
-    for (let i = 0; i < 6; i++) {
-      otp += digits[Math.floor(Math.random() * 10)];
-    }
-    return otp;
-  };
-
-  const sendEmail = (email, otp) => {
-    fetch('/send-email', {
-      method: 'POST',
-      body: JSON.stringify({ email, otp }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+  const handleSendEmail = () => {
+    // Make the POST request to the backend to send the email with OTP
+    api
+      .post('/send_email/', { email: email })
       .then((response) => {
         console.log('Email sent successfully.');
-        // Handle successful email sending
+        setEmailSent(true);
+        setShowOTPInput(true);
       })
       .catch((error) => {
         console.error('Failed to send email:', error);
@@ -87,19 +49,18 @@ const Register = () => {
   };
 
   const handleOTPVerification = () => {
-    if (otp === enteredOTP) {
-      console.log('OTP verified successfully.');
-      setVerificationError('');
-    } else {
-      console.log('Invalid OTP.');
-      setVerificationError('Invalid OTP. Please try again.');
-    }
-  };
-
-  const handleResendOTP = () => {
-    const newOtp = generateOTP();
-    setOtp(newOtp);
-    sendEmail(email, newOtp);
+    // Make the POST request to the backend to verify the entered OTP
+    api
+      .post('/verify-otp', { email: email, otp: enteredOTP })
+      .then((response) => {
+        console.log('OTP verified successfully.');
+        setVerificationError('');
+        setShowOTPInput(false); // Hide the OTP input area
+      })
+      .catch((error) => {
+        console.error('Invalid OTP:', error);
+        setVerificationError('Invalid OTP. Please try again.');
+      });
   };
 
   return (
@@ -124,28 +85,8 @@ const Register = () => {
           margin="normal"
           sx={{ marginBottom: '10px' }}
         />
-        {otp && (
-          <TextField
-            label="One-Time Password"
-            value={otp}
-            disabled
-            fullWidth
-            margin="normal"
-            sx={{ marginBottom: '10px' }}
-          />
-        )}
-        {!otp && (
+        {emailSent && showOTPInput && (
           <>
-            {isOTPExpired && (
-              <Button
-                variant="outlined"
-                onClick={handleResendOTP}
-                fullWidth
-                sx={{ marginTop: '10px' }}
-              >
-                Resend OTP
-              </Button>
-            )}
             <TextField
               type="text"
               label="Enter OTP"
@@ -158,39 +99,30 @@ const Register = () => {
             {verificationError && (
               <p style={{ color: 'red' }}>{verificationError}</p>
             )}
-            {!isOTPExpired && (
-              <Button
-                variant="contained"
-                onClick={handleOTPVerification}
-                fullWidth
-                sx={{ marginTop: '10px' }}
-              >
-                Verify OTP
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              onClick={handleOTPVerification}
+              fullWidth
+              sx={{ marginTop: '10px' }}
+            >
+              Verify OTP
+            </Button>
           </>
         )}
-        {otp && (
-          <>
-            <TextField
-              type="password"
-              label="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              fullWidth
-              margin="normal"
-              sx={{ marginBottom: '10px' }}
-            />
-            <TextField
-              type="password"
-              label="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              fullWidth
-              margin="normal"
-              sx={{ marginBottom: '10px' }}
-            />
-          </>
+        {emailSent && !showOTPInput && (
+          <p style={{ color: 'green', textAlign: 'center' }}>
+            OTP has been sent to your email.
+          </p>
+        )}
+        {!emailSent && (
+          <Button
+            variant="outlined"
+            onClick={handleSendEmail}
+            fullWidth
+            sx={{ marginTop: '10px' }}
+          >
+            Send OTP
+          </Button>
         )}
         <Button variant="contained" type="submit" sx={{ marginTop: '10px' }}>
           Register

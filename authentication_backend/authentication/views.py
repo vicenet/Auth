@@ -18,19 +18,34 @@ def send_email(request):
     if email and otp:
         subject = 'OTP Verification'
         message = f'Your OTP is: {otp}'
-        from_email = 'your-email@example.com'  # Replace with your email address
+        from_email = 'gitaubrian425@gmail.com'  # Replace with your email address
 
         try:
             send_mail(subject, message, from_email, [email])
             return Response({'message': 'Email sent successfully.'})
         except Exception as e:
-            return Response({'error': str(e)}, status=500)
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
-        return Response({'error': 'Email or OTP missing.'}, status=400)
+        return Response({'error': 'Email or OTP missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegisterView(APIView):
     def post(self, request):
+        phone = request.data.get('phone')
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        # Assuming you have a custom `generate_otp` function to generate OTP
+        otp = generate_otp()
+
+        # Save the generated OTP to the database or any other storage method
+
+        if email:
+            try:
+                send_email(email, otp)  # Send the OTP via email
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -45,7 +60,7 @@ class RegisterView(APIView):
 
 class LoginAPIView(APIView):
     def post(self, request):
-        username = request.data.get('username')
+        username = request.data.get('email')
         password = request.data.get('password')
 
         user = authenticate(request, username=username, password=password)
@@ -55,4 +70,4 @@ class LoginAPIView(APIView):
             return Response({'token': token.key})
         else:
             # User authentication failed
-            return Response({'error': 'Invalid credentials'}, status=401)
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
