@@ -1,88 +1,51 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField } from '@mui/material';
-import axios from '../axiosConfig';
+import api from '../axiosConfig';
+// import './App.css'; // Import the CSS file for styling
 
-const Login = () => {
+function LoginView() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Create an object with the login credentials
-    const credentials = {
-      email: email,
-      password: password,
-    };
-
-    axios
-      .post('login/', credentials) // Replace 'login/' with the appropriate login endpoint in your Django backend
-      .then((response) => {
-        if (response.status === 200) {
-          const token = response.data.token;
-          // Store the token in localStorage or in a state management solution of your choice
-          localStorage.setItem('token', token);
-          // Perform any necessary actions after successful login (e.g., redirect to a new page)
-          // Replace the following line with your desired logic
-          console.log('Login successful!');
-        } else {
-          setError('An error occurred. Please try again.');
-        }
-      })
-      .catch((error) => {
-        // Handle login error
-        if (error.response) {
-          setError(error.response.data.message);
-        } else {
-          setError('An error occurred. Please try again.');
-        }
+    try {
+      const response = await api.post('/login/', {
+        email,
+        password,
       });
+
+      if (response.status === 200) {
+        // Handle successful login
+        console.log('Login successful');
+      } else {
+        // Handle login error
+        console.error('Login failed');
+      }
+    } catch (error) {
+      console.error('Error occurred during login:', error);
+    }
   };
 
   return (
-    <Box sx={{ maxWidth: 300, margin: '0 auto', padding: '20px' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Login</h2>
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{ display: 'flex', flexDirection: 'column' }}
-      >
-        <TextField
+    <div className="login-container">
+      <form onSubmit={handleLogin}>
+        <input
           type="email"
-          label="Email"
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          fullWidth
-          margin="normal"
-          sx={{ marginBottom: '10px' }}
         />
-        <TextField
+        <input
           type="password"
-          label="Password"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          fullWidth
-          margin="normal"
-          sx={{ marginBottom: '10px' }}
         />
-        {error && (
-          <Box
-            sx={{
-              marginBottom: '10px',
-              color: 'red',
-              textAlign: 'center',
-            }}
-          >
-            {error}
-          </Box>
-        )}
-        <Button variant="contained" type="submit" sx={{ marginTop: '10px' }}>
-          Login
-        </Button>
-      </Box>
-    </Box>
+        <button type="submit">Login</button>
+      </form>
+    </div>
   );
-};
+}
 
-export default Login;
+export default LoginView;
