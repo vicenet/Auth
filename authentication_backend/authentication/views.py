@@ -3,9 +3,26 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from .serializers import AccountCreateSerializer, AccountSerializer, VerifyAccountSerializer
 from .email import send_otp_via_email_template
-from .models import * 
+from .models import UserAccount
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-# Create your views here.
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.email
+        # ...
+
+        return token
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+
 class SignupView(APIView):
     def post(self, request):
         serializer = AccountCreateSerializer(data=request.data)
@@ -56,8 +73,3 @@ class RetrieveUserView(APIView):
             'message': 'User data retrieved successfully.',
             'account': account_data
         }, status=status.HTTP_200_OK)
-
-
-
-
-

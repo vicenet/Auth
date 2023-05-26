@@ -14,7 +14,7 @@ function SignupView() {
     e.preventDefault();
 
     try {
-      const response = await api.post('/signup/', {
+      const response = await api.post('', {
         first_name: firstName,
         last_name: lastName,
         email,

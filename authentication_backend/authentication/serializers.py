@@ -23,7 +23,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user = UserAccount.objects.create_user(password=password, **validated_data)
+        user = User.objects.create_user(password=password, **validated_data)
         return user
 
 

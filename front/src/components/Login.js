@@ -1,51 +1,18 @@
-import React, { useState } from 'react';
-import api from '../axiosConfig';
-// import './App.css'; // Import the CSS file for styling
+import React, {useContext} from 'react'
+import AuthContext from '../context/AuthContext'
+import '../App.css';
 
-function LoginView() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await api.post('/login/', {
-        email,
-        password,
-      });
-
-      if (response.status === 200) {
-        // Handle successful login
-        console.log('Login successful');
-      } else {
-        // Handle login error
-        console.error('Login failed');
-      }
-    } catch (error) {
-      console.error('Error occurred during login:', error);
-    }
-  };
-
-  return (
-    <div className="login-container">
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  );
+const LoginPage = () => {
+    let {loginUser} = useContext(AuthContext)
+    return (
+        <div>
+            <form onSubmit={loginUser} className='login-container'>
+                <input type="text" name="username" placeholder="Enter Username"  />
+                <input type="password" name="password" placeholder="Enter Password" />
+                <input type="submit" className='button'/>
+            </form>
+        </div>
+    )
 }
 
-export default LoginView;
+export default LoginPage

@@ -46,8 +46,11 @@ input {
 
 button {
   padding: 10px 20px;
-  background-color: #4caf50;
+  outline-style: #000;
   color: white;
   border: none;
   cursor: pointer;
 }
+ .login-container {
+  display:flex
+ }
